@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f6f8">
+    <meta name="description" content="ブラウザで手軽に作成・編集できるシンプルなメモ帳です。">
+    <title>Memo - あなたのメモ帳</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./style.css">
+    <script src="./script.js" defer></script>
+  </head>
+  <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+    <header class="border-b border-slate-200 bg-white">
+      <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-5 sm:px-8">
+        <a class="flex items-center gap-3 text-inherit no-underline" href="./" aria-label="Memo ホーム">
+          <span class="brand-mark" aria-hidden="true">M</span>
+          <span>
+            <span class="block text-lg font-bold tracking-tight">Memo</span>
+            <span class="block text-xs text-slate-500">あなたのアイデアを、ここに。</span>
+          </span>
+        </a>
+        <button class="button button-primary" id="new-note-button" type="button">
+          <span aria-hidden="true">＋</span>
+          <span>新しいメモ</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-14">
+      <section aria-labelledby="page-title">
+        <div class="mb-8 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p class="mb-2 text-sm font-semibold text-indigo-600">MY NOTES</p>
+            <h1 class="text-3xl font-bold tracking-tight sm:text-4xl" id="page-title">メモ一覧</h1>
+            <p class="mt-2 text-sm text-slate-500" id="notes-count" aria-live="polite">メモを読み込んでいます…</p>
+          </div>
+          <label class="search-box">
+            <span class="sr-only">メモを検索</span>
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <input id="search-input" type="search" placeholder="メモを検索…" autocomplete="off">
+            <kbd aria-hidden="true">⌘ K</kbd>
+          </label>
+        </div>
+
+        <p class="notice" id="storage-notice" role="status" hidden></p>
+        <div class="notes-grid" id="notes-list" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <dialog class="note-dialog" id="note-dialog" aria-labelledby="dialog-title">
+      <form class="dialog-form" id="note-form">
+        <div class="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <p class="mb-1 text-xs font-semibold tracking-widest text-indigo-600">YOUR NOTE</p>
+            <h2 class="text-xl font-bold" id="dialog-title">新しいメモ</h2>
+          </div>
+          <button class="icon-button" id="close-dialog-button" type="button" aria-label="閉じる">×</button>
+        </div>
+        <label class="field-label" for="note-title">タイトル</label>
+        <input class="form-input mb-5" id="note-title" name="title" type="text" maxlength="100" placeholder="メモのタイトル" required>
+        <label class="field-label" for="note-body">内容 <span class="font-normal text-slate-400">（任意）</span></label>
+        <textarea class="form-input note-textarea" id="note-body" name="body" maxlength="10000" placeholder="思いついたことを書き留めましょう…"></textarea>
+        <div class="attachment-picker">
+          <label class="field-label" for="note-attachments">ファイル・画像を添付</label>
+          <input class="form-input file-input" id="note-attachments" type="file" multiple>
+          <p class="attachment-help">1ファイル20MBまで。添付ファイルはこのブラウザ内に保存されます。</p>
+          <ul class="attachment-list editor-attachment-list" id="editor-attachments" aria-live="polite"></ul>
+        </div>
+        <div class="mt-6 flex justify-end gap-3">
+          <button class="button button-secondary" id="cancel-button" type="button">キャンセル</button>
+          <button class="button button-primary" type="submit">保存する</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="share-dialog" id="share-dialog" aria-labelledby="share-dialog-title">
+      <div class="share-dialog-content">
+        <div class="share-dialog-heading">
+          <div>
+            <p class="mb-1 text-xs font-semibold tracking-widest text-indigo-600">SHARE NOTE</p>
+            <h2 class="text-xl font-bold" id="share-dialog-title">どんなふうに送りますか？</h2>
+          </div>
+          <button class="icon-button" id="close-share-dialog-button" type="button" aria-label="閉じる">×</button>
+        </div>
+        <p class="share-help">共有リンクはHTTPSで公開した後に使えます。LINE・メールには本文とリンクを共有します。カカオトークは端末の共有画面から選択できます。共有画面が使えない環境では本文またはリンクをコピーします。添付ファイルは共有リンクには含まれません。</p>
+        <div class="share-options">
+          <a class="share-option line-option" id="line-share-link" href="#" target="_blank" rel="noopener noreferrer">
+            <span class="share-option-icon" aria-hidden="true">L</span>
+            <span>LINEで送る</span>
+          </a>
+          <a class="share-option" id="email-share-link" href="#">
+            <span class="share-option-icon" aria-hidden="true">✉</span>
+            <span>メールで送る</span>
+          </a>
+          <button class="share-option kakao-share-option" id="device-share-button" type="button">
+            <span class="share-option-icon kakao-share-icon" aria-hidden="true">T</span>
+            <span>カカオトークなどで送る</span>
+          </button>
+          <button class="share-option" id="copy-share-link-button" type="button">
+            <span class="share-option-icon" aria-hidden="true">↗</span>
+            <span>共有リンクをコピー</span>
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>
